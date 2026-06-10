@@ -10,9 +10,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 const createAdminSchema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(8, "Min 8 characters"),
-  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Email tidak valid"),
+  password: z.string().min(8, "Minimal 8 karakter"),
+  name: z.string().min(1, "Nama wajib diisi"),
 });
 
 type CreateAdminFormData = z.infer<typeof createAdminSchema>;
@@ -40,52 +40,60 @@ export default function SettingsPage() {
       setShowCreateModal(false);
       reset();
     } catch (error) {
-      console.error("Failed to create admin:", error);
+      console.error("Gagal membuat admin:", error);
     }
   };
 
   if (profileLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-grey200 border-t-text-primary" />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your profile and admin accounts
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+          Pengaturan
+        </h1>
+        <p className="mt-1 text-sm text-text-secondary">
+          Kelola profil dan akun admin
         </p>
       </div>
 
       {/* Profile Section */}
-      <div className="mb-8 rounded-lg border bg-card p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold">Your Profile</h2>
+      <div className="mb-4 rounded-[20px] bg-grey50 p-5">
+        <h2 className="mb-4 text-sm font-semibold text-text-primary">
+          Profil Anda
+        </h2>
         {profile && (
           <dl className="grid gap-4 md:grid-cols-2">
             <div>
-              <dt className="text-sm text-muted-foreground">Name</dt>
-              <dd className="text-sm font-medium">{profile.name}</dd>
+              <dt className="text-xs text-text-tertiary">Nama</dt>
+              <dd className="text-sm font-medium text-text-primary">
+                {profile.name}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">Email</dt>
-              <dd className="text-sm font-medium">{profile.email}</dd>
+              <dt className="text-xs text-text-tertiary">Email</dt>
+              <dd className="text-sm font-medium text-text-primary">
+                {profile.email}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">Role</dt>
+              <dt className="text-xs text-text-tertiary">Role</dt>
               <dd>
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-grey100 px-2.5 py-1 text-[11px] font-semibold text-grey700">
                   <Shield className="h-3 w-3" />
                   {profile.role}
                 </span>
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-muted-foreground">Created</dt>
-              <dd className="text-sm font-medium">
+              <dt className="text-xs text-text-tertiary">Dibuat</dt>
+              <dd className="text-sm font-medium text-text-primary">
                 {formatDate(profile.created_at)}
               </dd>
             </div>
@@ -95,44 +103,61 @@ export default function SettingsPage() {
 
       {/* Admin Management (Super Admin Only) */}
       {isSuperAdmin && (
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="rounded-[20px] bg-grey50 p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Admin Accounts</h2>
+            <h2 className="text-sm font-semibold text-text-primary">
+              Akun Admin
+            </h2>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="flex h-10 items-center gap-1.5 rounded-[14px] bg-text-primary px-4 text-sm font-semibold text-white transition-all hover:opacity-90"
             >
-              <Plus className="h-4 w-4" />
-              Add Admin
+              <Plus className="h-3.5 w-3.5" />
+              Tambah Admin
             </button>
           </div>
 
           {adminsLoading ? (
             <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-grey200 border-t-text-primary" />
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b text-left text-sm text-muted-foreground">
-                  <th className="pb-3 font-medium">Name</th>
-                  <th className="pb-3 font-medium">Email</th>
-                  <th className="pb-3 font-medium">Role</th>
-                  <th className="pb-3 font-medium">Created</th>
+                <tr className="border-b border-grey100">
+                  <th className="pb-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Nama
+                  </th>
+                  <th className="pb-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Email
+                  </th>
+                  <th className="pb-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Role
+                  </th>
+                  <th className="pb-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Dibuat
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {admins?.map((admin) => (
-                  <tr key={admin.uid} className="border-b last:border-0">
-                    <td className="py-3 text-sm">{admin.name}</td>
-                    <td className="py-3 text-sm">{admin.email}</td>
-                    <td className="py-3 text-sm">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                  <tr
+                    key={admin.uid}
+                    className="border-b border-grey100 last:border-0"
+                  >
+                    <td className="py-3 text-sm text-text-primary">
+                      {admin.name}
+                    </td>
+                    <td className="py-3 text-sm text-text-secondary">
+                      {admin.email}
+                    </td>
+                    <td className="py-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-grey100 px-2.5 py-1 text-[11px] font-semibold text-grey700">
                         <Shield className="h-3 w-3" />
                         {admin.role}
                       </span>
                     </td>
-                    <td className="py-3 text-sm text-muted-foreground">
+                    <td className="py-3 text-sm text-text-secondary">
                       {formatDate(admin.created_at)}
                     </td>
                   </tr>
@@ -145,85 +170,89 @@ export default function SettingsPage() {
 
       {/* Create Admin Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg border bg-card p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Add New Admin</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[20px] bg-background p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold tracking-tight text-text-primary">
+                Tambah Admin Baru
+              </h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="rounded-full p-1 hover:bg-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-grey50 text-grey500 transition-colors hover:bg-grey100"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
               <div>
-                <label className="mb-1 block text-sm font-medium">Name</label>
+                <label className="mb-1.5 block text-[13px] font-semibold text-text-primary">
+                  Nama
+                </label>
                 <input
                   {...register("name")}
                   type="text"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  placeholder="Full name"
+                  className="w-full rounded-[16px] border border-transparent bg-off-white px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary"
+                  placeholder="Nama lengkap"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-error">
                     {errors.name.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label className="mb-1.5 block text-[13px] font-semibold text-text-primary">
                   Email
                 </label>
                 <input
                   {...register("email")}
                   type="email"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-[16px] border border-transparent bg-off-white px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary"
                   placeholder="admin@bnn.go.id"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-error">
                     {errors.email.message}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
+                <label className="mb-1.5 block text-[13px] font-semibold text-text-primary">
                   Password
                 </label>
                 <input
                   {...register("password")}
                   type="password"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  placeholder="Min 8 characters"
+                  className="w-full rounded-[16px] border border-transparent bg-off-white px-4 py-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary"
+                  placeholder="Minimal 8 karakter"
                 />
                 {errors.password && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="mt-1 text-xs text-error">
                     {errors.password.message}
                   </p>
                 )}
               </div>
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
+                  className="h-11 rounded-[14px] border border-grey200 px-5 text-sm font-semibold text-text-primary transition-all hover:bg-grey50"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={createAdmin.isPending}
-                  className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                  className="flex h-11 items-center gap-2 rounded-[14px] bg-text-primary px-5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   {createAdmin.isPending && (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   )}
-                  Create Admin
+                  Buat Admin
                 </button>
               </div>
             </form>

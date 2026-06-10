@@ -9,7 +9,6 @@ import {
   Users,
   Settings,
   LogOut,
-  Activity,
 } from "lucide-react";
 
 const navigation = [
@@ -19,12 +18,12 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: "Clients",
+    name: "Klien",
     href: "/clients",
     icon: Users,
   },
   {
-    name: "Settings",
+    name: "Pengaturan",
     href: "/settings",
     icon: Settings,
   },
@@ -34,16 +33,18 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, signOut, isSuperAdmin } = useAuth();
 
+  const userInitial = user?.email?.charAt(0).toUpperCase() || "A";
+
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-card">
+    <div className="flex h-full w-56 flex-col bg-background">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b px-6">
-        <Activity className="h-6 w-6 text-primary" />
-        <span className="text-lg font-semibold">BNN Dashboard</span>
+      <div className="flex h-16 items-center gap-2.5 px-5">
+        <span className="text-xl">🔥</span>
+        <span className="text-lg font-bold tracking-tight">Cling</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 px-3 pt-2">
         {navigation.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
@@ -51,13 +52,13 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-[14px] px-3.5 py-2.5 text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-text-primary text-white"
+                  : "text-text-secondary hover:bg-grey50 hover:text-text-primary"
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-[18px] w-[18px]" />
               {item.name}
             </Link>
           );
@@ -65,19 +66,26 @@ export function Sidebar() {
       </nav>
 
       {/* User Info & Logout */}
-      <div className="border-t p-4">
-        <div className="mb-3">
-          <p className="text-sm font-medium">{user?.email}</p>
-          <p className="text-xs text-muted-foreground">
-            {isSuperAdmin ? "Super Admin" : "Admin"}
-          </p>
+      <div className="border-t border-grey100 px-4 py-4">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-grey100 text-xs font-semibold text-grey700">
+            {userInitial}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-text-primary">
+              {user?.email}
+            </p>
+            <p className="text-[11px] font-semibold text-text-tertiary">
+              {isSuperAdmin ? "Super Admin" : "Admin"}
+            </p>
+          </div>
         </div>
         <button
           onClick={signOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="flex w-full items-center gap-2.5 rounded-[14px] px-3.5 py-2.5 text-sm font-medium text-text-secondary transition-all hover:bg-grey50 hover:text-text-primary"
         >
-          <LogOut className="h-4 w-4" />
-          Sign Out
+          <LogOut className="h-[18px] w-[18px]" />
+          Keluar
         </button>
       </div>
     </div>

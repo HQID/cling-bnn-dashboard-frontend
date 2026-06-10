@@ -13,6 +13,15 @@ import {
   GripVertical,
 } from "lucide-react";
 import type { RecoveryPhase, Task, CriticalDay, GameConfig } from "@/lib/api";
+import { NumberStepper } from "@/components/number-stepper";
+import { SelectionCard } from "@/components/selection-card";
+
+const questTypeOptions = [
+  { value: "daily", label: "Harian", description: "Tugas harian berulang" },
+  { value: "phase", label: "Fase", description: "Tugas khusus fase ini" },
+  { value: "emergency", label: "Darurat", description: "Tugas saat krisis" },
+  { value: "critical", label: "Kritis", description: "Tugas hari kritis" },
+];
 
 export default function ProgramBuilderPage() {
   const params = useParams();
@@ -30,7 +39,10 @@ export default function ProgramBuilderPage() {
     partial_recovery_days: 90,
     full_recovery_days: 180,
   });
-  const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [saveStatus, setSaveStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Load existing program data
   useEffect(() => {
@@ -59,11 +71,9 @@ export default function ProgramBuilderPage() {
   // Remove phase
   const removePhase = (index: number) => {
     const newPhases = phases.filter((_, i) => i !== index);
-    // Reindex phases
     const reindexed = newPhases.map((p, i) => ({ ...p, phase_index: i + 1 }));
     setPhases(reindexed);
 
-    // Update task pools
     const newPools: Record<string, Task[]> = {};
     reindexed.forEach((p, i) => {
       const oldKey = String(phases[i]?.phase_index);
@@ -132,10 +142,16 @@ export default function ProgramBuilderPage() {
         games,
         estimates,
       });
-      setSaveStatus({ type: "success", message: "Program saved successfully!" });
+      setSaveStatus({
+        type: "success",
+        message: "Program berhasil disimpan!",
+      });
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (error) {
-      setSaveStatus({ type: "error", message: "Failed to save program. Please try again." });
+      setSaveStatus({
+        type: "error",
+        message: "Gagal menyimpan program. Silakan coba lagi.",
+      });
       setTimeout(() => setSaveStatus(null), 5000);
     }
   };
@@ -143,7 +159,7 @@ export default function ProgramBuilderPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-grey200 border-t-text-primary" />
       </div>
     );
   }
@@ -154,137 +170,145 @@ export default function ProgramBuilderPage() {
       <div className="mb-6">
         <Link
           href={`/clients/${clientUid}`}
-          className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="mb-4 inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Client
+          Kembali ke Klien
         </Link>
         <div className="flex items-center justify-between">
-        {saveStatus && (
-          <div className={`mb-4 rounded-md px-4 py-2 text-sm ${saveStatus.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
-            {saveStatus.message}
-          </div>
-        )}
           <div>
-            <h1 className="text-3xl font-bold">Program Builder</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+              Pembuat Program
+            </h1>
+            <p className="mt-1 text-sm text-text-secondary">
               {client?.name || client?.email}
             </p>
           </div>
           <button
             onClick={handleSave}
             disabled={createProgram.isPending}
-            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            className="flex h-10 items-center gap-2 rounded-[14px] bg-text-primary px-5 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
           >
             {createProgram.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Save className="h-4 w-4" />
             )}
-            Save Program
+            Simpan Program
           </button>
         </div>
       </div>
 
+      {/* Save Status */}
+      {saveStatus && (
+        <div
+          className={`mb-4 rounded-[14px] px-4 py-3 text-sm ${
+            saveStatus.type === "success"
+              ? "bg-grey50 text-success"
+              : "bg-error-light text-error"
+          }`}
+        >
+          {saveStatus.message}
+        </div>
+      )}
+
       {/* Estimates */}
-      <div className="mb-6 rounded-lg border bg-card p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold">Recovery Estimates</h3>
-        <div className="grid gap-4 md:grid-cols-2">
+      <div className="mb-4 rounded-[20px] bg-grey50 p-5">
+        <h3 className="mb-4 text-sm font-semibold text-text-primary">
+          Estimasi Pemulihan
+        </h3>
+        <div className="grid gap-3.5 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">
-              Partial Recovery (days)
+            <label className="mb-1.5 block text-[13px] font-semibold text-text-primary">
+              Pemulihan Parsial (hari)
             </label>
-            <input
-              type="number"
+            <NumberStepper
               value={estimates.partial_recovery_days}
-              onChange={(e) =>
-                setEstimates({
-                  ...estimates,
-                  partial_recovery_days: parseInt(e.target.value) || 0,
-                })
+              onChange={(v) =>
+                setEstimates({ ...estimates, partial_recovery_days: v })
               }
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              min={30}
+              max={365}
+              step={10}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">
-              Full Recovery (days)
+            <label className="mb-1.5 block text-[13px] font-semibold text-text-primary">
+              Pemulihan Penuh (hari)
             </label>
-            <input
-              type="number"
+            <NumberStepper
               value={estimates.full_recovery_days}
-              onChange={(e) =>
-                setEstimates({
-                  ...estimates,
-                  full_recovery_days: parseInt(e.target.value) || 0,
-                })
+              onChange={(v) =>
+                setEstimates({ ...estimates, full_recovery_days: v })
               }
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              min={60}
+              max={730}
+              step={10}
             />
           </div>
         </div>
       </div>
 
       {/* Phases */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Phases</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Fase</h3>
           <button
             onClick={addPhase}
-            className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
+            className="flex h-10 items-center gap-1.5 rounded-[14px] border border-grey200 px-3.5 text-sm font-semibold text-text-primary transition-all hover:bg-grey50"
           >
-            <Plus className="h-4 w-4" />
-            Add Phase
+            <Plus className="h-3.5 w-3.5" />
+            Tambah Fase
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {phases.map((phase, index) => (
             <div
               key={phase.phase_index}
-              className="rounded-lg border bg-card p-4 shadow-sm"
+              className="rounded-[16px] bg-grey50 p-4"
             >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <GripVertical className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">
-                    Phase {phase.phase_index}
+                  <GripVertical className="h-4 w-4 text-text-tertiary" />
+                  <span className="text-sm font-semibold text-text-primary">
+                    Fase {phase.phase_index}
                   </span>
                 </div>
                 <button
                   onClick={() => removePhase(index)}
-                  className="rounded p-1 text-destructive hover:bg-destructive/10"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-error transition-colors hover:bg-error-light"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm">Title</label>
+                  <label className="mb-1.5 block text-xs font-medium text-text-secondary">
+                    Judul
+                  </label>
                   <input
                     type="text"
                     value={phase.title}
                     onChange={(e) =>
                       updatePhase(index, { title: e.target.value })
                     }
-                    className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
-                    placeholder="e.g., Acute Withdrawal Phase"
+                    className="w-full rounded-[14px] border border-transparent bg-off-white px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary"
+                    placeholder="cth: Fase Penarikan Akut"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm">
-                    Duration (days)
+                  <label className="mb-1.5 block text-xs font-medium text-text-secondary">
+                    Durasi (hari)
                   </label>
-                  <input
-                    type="number"
+                  <NumberStepper
                     value={phase.duration_days}
-                    onChange={(e) =>
-                      updatePhase(index, {
-                        duration_days: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
+                    onChange={(v) => updatePhase(index, { duration_days: v })}
+                    min={7}
+                    max={365}
+                    step={7}
+                    className="h-10"
                   />
                 </div>
               </div>
@@ -292,54 +316,107 @@ export default function ProgramBuilderPage() {
               {/* Tasks for this phase */}
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    Tasks ({(taskPools[String(phase.phase_index)] ?? []).length})
+                  <span className="text-xs font-semibold text-text-secondary">
+                    Tugas ({(taskPools[String(phase.phase_index)] ?? []).length})
                   </span>
                   <button
                     onClick={() => addTask(phase.phase_index)}
-                    className="flex items-center gap-1 text-xs text-primary hover:underline"
+                    className="flex items-center gap-1 text-xs font-semibold text-text-primary hover:underline"
                   >
                     <Plus className="h-3 w-3" />
-                    Add Task
+                    Tambah Tugas
                   </button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {(taskPools[String(phase.phase_index)] ?? []).map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center gap-2 rounded border bg-muted/50 p-2"
+                      className="rounded-[12px] bg-off-white p-3.5"
                     >
-                      <input
-                        type="text"
-                        value={task.title}
-                        onChange={(e) =>
-                          updateTask(phase.phase_index, task.id, {
-                            title: e.target.value,
-                          })
-                        }
-                        className="flex-1 rounded border bg-background px-2 py-1 text-sm"
-                        placeholder="Task title"
-                      />
-                      <input
-                        type="number"
-                        value={task.xp_reward}
-                        onChange={(e) =>
-                          updateTask(phase.phase_index, task.id, {
-                            xp_reward: parseInt(e.target.value) || 0,
-                          })
-                        }
-                        className="w-20 rounded border bg-background px-2 py-1 text-sm"
-                        placeholder="XP"
-                      />
-                      <button
-                        onClick={() =>
-                          removeTask(phase.phase_index, task.id)
-                        }
-                        className="rounded p-1 text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                      <div className="mb-2.5 flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={task.title}
+                          onChange={(e) =>
+                            updateTask(phase.phase_index, task.id, {
+                              title: e.target.value,
+                            })
+                          }
+                          className="flex-1 rounded-[12px] border border-transparent bg-background px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary"
+                          placeholder="Judul tugas"
+                        />
+                        <button
+                          onClick={() =>
+                            removeTask(phase.phase_index, task.id)
+                          }
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-error transition-colors hover:bg-error-light"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Quest Type Selection */}
+                      <div className="mb-2.5">
+                        <label className="mb-1.5 block text-[11px] font-semibold text-text-tertiary">
+                          Tipe Quest
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {questTypeOptions.map((opt) => {
+                            const isSelected = task.quest_type === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() =>
+                                  updateTask(phase.phase_index, task.id, {
+                                    quest_type: opt.value as Task["quest_type"],
+                                  })
+                                }
+                                className={`flex items-center gap-2 rounded-[10px] border px-3 py-2.5 text-left transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-text-primary bg-text-primary text-white"
+                                    : "border-grey200 bg-grey50 text-text-primary"
+                                }`}
+                              >
+                                <div
+                                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-200 ${
+                                    isSelected
+                                      ? "border-white bg-white"
+                                      : "border-grey300 bg-transparent"
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <div className="h-2 w-2 rounded-full bg-text-primary" />
+                                  )}
+                                </div>
+                                <span className="text-xs font-medium">
+                                  {opt.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* XP Reward Stepper */}
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-semibold text-text-tertiary">
+                          Hadiah XP
+                        </label>
+                        <NumberStepper
+                          value={task.xp_reward}
+                          onChange={(v) =>
+                            updateTask(phase.phase_index, task.id, {
+                              xp_reward: v,
+                            })
+                          }
+                          min={0}
+                          max={500}
+                          step={10}
+                          className="h-10"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -349,8 +426,8 @@ export default function ProgramBuilderPage() {
         </div>
 
         {phases.length === 0 && (
-          <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-            No phases added yet. Click &quot;Add Phase&quot; to get started.
+          <div className="rounded-[16px] border border-dashed border-grey200 py-12 text-center text-sm text-text-tertiary">
+            Belum ada fase. Klik &quot;Tambah Fase&quot; untuk memulai.
           </div>
         )}
       </div>
@@ -360,14 +437,14 @@ export default function ProgramBuilderPage() {
         <button
           onClick={handleSave}
           disabled={createProgram.isPending}
-          className="flex items-center gap-2 rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+          className="flex h-10 items-center gap-2 rounded-[14px] bg-text-primary px-6 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
         >
           {createProgram.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Save className="h-4 w-4" />
           )}
-          Save Program
+          Simpan Program
         </button>
       </div>
     </div>
