@@ -52,7 +52,7 @@ export default function ProgramBuilderPage() {
   const addPhase = () => {
     const newPhase: RecoveryPhase = {
       phase_index: phases.length + 1,
-      title: "",
+      title: `Fase ${phases.length + 1}`,
       duration_days: 30,
       expected_symptoms: [],
       mitigation_tasks: [],
@@ -87,9 +87,10 @@ export default function ProgramBuilderPage() {
   // Add task to phase
   const addTask = (phaseIndex: number) => {
     const key = String(phaseIndex);
+    const poolLength = (taskPools[key] ?? []).length;
     const newTask: Task = {
       id: crypto.randomUUID(),
-      title: "",
+      title: `Tugas ${poolLength + 1}`,
       description: "",
       xp_reward: 50,
       sparkle_reward: 10,
@@ -127,6 +128,28 @@ export default function ProgramBuilderPage() {
   // Save program
   const handleSave = async () => {
     setSaveStatus(null);
+
+    // Validate before sending
+    if (phases.length === 0) {
+      setSaveStatus({ type: "error", message: "Tambahkan minimal 1 fase." });
+      return;
+    }
+    for (const phase of phases) {
+      if (!phase.title.trim()) {
+        setSaveStatus({ type: "error", message: `Judul fase ${phase.phase_index} tidak boleh kosong.` });
+        return;
+      }
+    }
+    for (const phase of phases) {
+      const pool = taskPools[String(phase.phase_index)] ?? [];
+      for (const task of pool) {
+        if (!task.title.trim()) {
+          setSaveStatus({ type: "error", message: `Judul tugas di fase ${phase.phase_index} tidak boleh kosong.` });
+          return;
+        }
+      }
+    }
+
     try {
       await createProgram.mutateAsync({
         phases,
