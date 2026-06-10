@@ -28,6 +28,7 @@ export default function ClientDetailPage() {
   const resetPassword = useResetClientPassword(clientUid);
 
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
@@ -48,9 +49,11 @@ export default function ClientDetailPage() {
       await resetPassword.mutateAsync(newPassword);
       setShowResetPassword(false);
       setNewPassword("");
-      alert("Password reset successfully");
+      setStatusMessage({ type: "success", message: "Password reset successfully" });
+      setTimeout(() => setStatusMessage(null), 3000);
     } catch (error) {
-      console.error("Failed to reset password:", error);
+      setStatusMessage({ type: "error", message: "Failed to reset password" });
+      setTimeout(() => setStatusMessage(null), 5000);
     }
   };
 
@@ -65,6 +68,13 @@ export default function ClientDetailPage() {
 
   return (
     <div>
+      {/* Status Message */}
+      {statusMessage && (
+        <div className={`mb-4 rounded-md px-4 py-2 text-sm ${statusMessage.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+          {statusMessage.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-6">
         <Link

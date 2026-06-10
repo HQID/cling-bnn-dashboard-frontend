@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProgram, useCreateProgram, useClient } from "@/hooks/use-api";
 import {
   ArrowLeft,
@@ -30,9 +30,10 @@ export default function ProgramBuilderPage() {
     partial_recovery_days: 90,
     full_recovery_days: 180,
   });
+  const [saveStatus, setSaveStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Load existing program data
-  useState(() => {
+  useEffect(() => {
     if (existingProgram) {
       setPhases(existingProgram.phases);
       setTaskPools(existingProgram.task_pools);
@@ -40,7 +41,7 @@ export default function ProgramBuilderPage() {
       setGames(existingProgram.games);
       setEstimates(existingProgram.estimates);
     }
-  });
+  }, [existingProgram]);
 
   // Add new phase
   const addPhase = () => {
@@ -122,6 +123,7 @@ export default function ProgramBuilderPage() {
 
   // Save program
   const handleSave = async () => {
+    setSaveStatus(null);
     try {
       await createProgram.mutateAsync({
         phases,
@@ -130,10 +132,11 @@ export default function ProgramBuilderPage() {
         games,
         estimates,
       });
-      alert("Program saved successfully!");
+      setSaveStatus({ type: "success", message: "Program saved successfully!" });
+      setTimeout(() => setSaveStatus(null), 3000);
     } catch (error) {
-      console.error("Failed to save program:", error);
-      alert("Failed to save program");
+      setSaveStatus({ type: "error", message: "Failed to save program. Please try again." });
+      setTimeout(() => setSaveStatus(null), 5000);
     }
   };
 
@@ -157,6 +160,11 @@ export default function ProgramBuilderPage() {
           Back to Client
         </Link>
         <div className="flex items-center justify-between">
+        {saveStatus && (
+          <div className={`mb-4 rounded-md px-4 py-2 text-sm ${saveStatus.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {saveStatus.message}
+          </div>
+        )}
           <div>
             <h1 className="text-3xl font-bold">Program Builder</h1>
             <p className="text-muted-foreground">

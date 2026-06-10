@@ -20,7 +20,14 @@ const createClientSchema = z.object({
   password: z.string().min(8, "Min 8 characters"),
   name: z.string().min(1, "Name is required"),
   client_identifier: z.string().min(1, "Client ID is required"),
-  age: z.number().min(12).max(99).optional(),
+  age: z.preprocess(
+    (val) => {
+      if (val === "" || val === undefined || val === null) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z.number().min(12, "Age must be at least 12").max(99, "Age must be under 100").optional()
+  ),
   substance_type: z.string().optional(),
   daily_frequency: z.number().min(0).optional(),
   daily_cost: z.number().min(0).optional(),
@@ -28,6 +35,7 @@ const createClientSchema = z.object({
 });
 
 type CreateClientFormData = z.infer<typeof createClientSchema>;
+type CreateClientFormInput = z.input<typeof createClientSchema>;
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
@@ -40,7 +48,7 @@ export default function ClientsPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateClientFormData>({
+  } = useForm<CreateClientFormInput, any, CreateClientFormData>({
     resolver: zodResolver(createClientSchema),
   });
 
@@ -125,11 +133,10 @@ export default function ClientsPage() {
                   </td>
                   <td className="p-4 text-sm">
                     <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                        client.bnn_status === "bnn_client"
-                          ? "bg-blue-500/10 text-blue-500"
-                          : "bg-gray-500/10 text-gray-500"
-                      }`}
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${client.bnn_status === "bnn_client"
+                        ? "bg-blue-500/10 text-blue-500"
+                        : "bg-gray-500/10 text-gray-500"
+                        }`}
                     >
                       {client.bnn_status}
                     </span>
@@ -249,10 +256,22 @@ export default function ClientsPage() {
                   </label>
                   <input
                     {...register("age")}
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyPress={(e) => {
+                      if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                     placeholder="25"
                   />
+                  {errors.age && (
+                    <p className="mt-1 text-xs text-destructive">
+                      {errors.age.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>

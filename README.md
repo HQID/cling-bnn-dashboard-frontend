@@ -13,9 +13,9 @@ Web dashboard for BNN (Badan Narkotika Nasional) team members to manage rehabili
 
 ## Tech Stack
 
-- **Framework**: Next.js 14+ (App Router)
+- **Framework**: Next.js 16+ (App Router)
 - **Language**: TypeScript
-- **UI**: Tailwind CSS + shadcn/ui components
+- **UI**: Tailwind CSS 4
 - **State Management**: TanStack Query (React Query)
 - **HTTP Client**: Axios
 - **Auth**: Firebase Authentication
