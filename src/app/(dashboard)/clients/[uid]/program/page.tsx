@@ -16,13 +16,6 @@ import type { RecoveryPhase, Task, CriticalDay, GameConfig } from "@/lib/api";
 import { NumberStepper } from "@/components/number-stepper";
 import { SelectionCard } from "@/components/selection-card";
 
-const questTypeOptions = [
-  { value: "daily", label: "Harian", description: "Tugas harian berulang" },
-  { value: "phase", label: "Fase", description: "Tugas khusus fase ini" },
-  { value: "emergency", label: "Darurat", description: "Tugas saat krisis" },
-  { value: "critical", label: "Kritis", description: "Tugas hari kritis" },
-];
-
 export default function ProgramBuilderPage() {
   const params = useParams();
   const clientUid = params["uid"] as string;
@@ -97,9 +90,9 @@ export default function ProgramBuilderPage() {
     const newTask: Task = {
       id: crypto.randomUUID(),
       title: "",
+      description: "",
       xp_reward: 50,
       sparkle_reward: 10,
-      quest_type: "daily",
     };
     setTaskPools({
       ...taskPools,
@@ -356,47 +349,22 @@ export default function ProgramBuilderPage() {
                         </button>
                       </div>
 
-                      {/* Quest Type Selection */}
+                      {/* Description */}
                       <div className="mb-2.5">
                         <label className="mb-1.5 block text-[11px] font-semibold text-text-tertiary">
-                          Tipe Quest
+                          Deskripsi
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {questTypeOptions.map((opt) => {
-                            const isSelected = task.quest_type === opt.value;
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() =>
-                                  updateTask(phase.phase_index, task.id, {
-                                    quest_type: opt.value as Task["quest_type"],
-                                  })
-                                }
-                                className={`flex items-center gap-2 rounded-[10px] border px-3 py-2.5 text-left transition-all duration-200 ${
-                                  isSelected
-                                    ? "border-text-primary bg-text-primary text-white"
-                                    : "border-grey200 bg-grey50 text-text-primary"
-                                }`}
-                              >
-                                <div
-                                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-200 ${
-                                    isSelected
-                                      ? "border-white bg-white"
-                                      : "border-grey300 bg-transparent"
-                                  }`}
-                                >
-                                  {isSelected && (
-                                    <div className="h-2 w-2 rounded-full bg-text-primary" />
-                                  )}
-                                </div>
-                                <span className="text-xs font-medium">
-                                  {opt.label}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                        <textarea
+                          value={task.description ?? ""}
+                          onChange={(e) =>
+                            updateTask(phase.phase_index, task.id, {
+                              description: e.target.value,
+                            })
+                          }
+                          rows={2}
+                          className="w-full rounded-[12px] border border-transparent bg-background px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-text-primary resize-none"
+                          placeholder="Deskripsi tugas (opsional)"
+                        />
                       </div>
 
                       {/* XP Reward Stepper */}

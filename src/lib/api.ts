@@ -117,7 +117,7 @@ export interface Task {
   xp_reward: number;
   sparkle_reward: number;
   science_source?: string;
-  quest_type: "daily" | "phase" | "emergency" | "critical";
+  quest_type?: "daily" | "phase" | "emergency" | "critical";
 }
 
 export interface CriticalDay {
