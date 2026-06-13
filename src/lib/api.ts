@@ -110,6 +110,21 @@ export interface RecoveryPhase {
   mitigation_tasks: string[];
 }
 
+export interface EvidenceRequirement {
+  allowed_types: ("image" | "pdf" | "video" | "document")[];
+  max_files: number;
+}
+
+export interface EvidenceUpload {
+  id: string;
+  quest_id: string;
+  file_name: string;
+  file_url: string;
+  mime_type: string;
+  file_size: number;
+  uploaded_at: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -118,6 +133,7 @@ export interface Task {
   sparkle_reward: number;
   science_source?: string;
   quest_type?: "daily" | "phase" | "emergency" | "critical";
+  evidence_requirement?: EvidenceRequirement | null;
 }
 
 export interface CriticalDay {
