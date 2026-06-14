@@ -12,7 +12,7 @@ import {
   Loader2,
   GripVertical,
 } from "lucide-react";
-import type { RecoveryPhase, Task, CriticalDay, GameConfig } from "@/lib/api";
+import type { RecoveryPhase, Task, CriticalDay, GameConfig, EvidenceRequirement } from "@/lib/api";
 import { NumberStepper } from "@/components/number-stepper";
 import { SelectionCard } from "@/components/selection-card";
 
@@ -94,6 +94,7 @@ export default function ProgramBuilderPage() {
       description: "",
       xp_reward: 50,
       sparkle_reward: 10,
+      evidence_requirement: null,
     };
     setTaskPools({
       ...taskPools,
@@ -407,6 +408,111 @@ export default function ProgramBuilderPage() {
                           step={10}
                           className="h-10"
                         />
+                      </div>
+
+                      {/* Evidence Requirement */}
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-semibold text-text-tertiary">
+                            Bukti yang Dibutuhkan
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateTask(phase.phase_index, task.id, {
+                                evidence_requirement:
+                                  task.evidence_requirement
+                                    ? null
+                                    : { allowed_types: ["image"], max_files: 1 },
+                              })
+                            }
+                            className={`relative h-5 w-9 rounded-full transition-colors ${
+                              task.evidence_requirement
+                                ? "bg-text-primary"
+                                : "bg-grey200"
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                                task.evidence_requirement
+                                  ? "left-[18px]"
+                                  : "left-0.5"
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {task.evidence_requirement && (
+                          <div className="mt-2.5 space-y-2.5">
+                            {/* File Type Checkboxes */}
+                            <div className="flex flex-wrap gap-2">
+                              {(
+                                [
+                                  { value: "image", label: "📷 Gambar" },
+                                  { value: "pdf", label: "📄 PDF" },
+                                  { value: "video", label: "🎥 Video" },
+                                  { value: "document", label: "📝 Dokumen" },
+                                ] as const
+                              ).map((ft) => {
+                                const isChecked =
+                                  task.evidence_requirement?.allowed_types.includes(
+                                    ft.value
+                                  ) ?? false;
+                                return (
+                                  <button
+                                    key={ft.value}
+                                    type="button"
+                                    onClick={() => {
+                                      const current =
+                                        task.evidence_requirement?.allowed_types ?? [];
+                                      const next = isChecked
+                                        ? current.filter((t) => t !== ft.value)
+                                        : [...current, ft.value];
+                                      if (next.length === 0) return; // at least one type
+                                      updateTask(phase.phase_index, task.id, {
+                                        evidence_requirement: {
+                                          ...task.evidence_requirement!,
+                                          allowed_types: next,
+                                        },
+                                      });
+                                    }}
+                                    className={`flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-xs font-medium transition-colors ${
+                                      isChecked
+                                        ? "bg-text-primary text-white"
+                                        : "bg-background text-text-secondary border border-grey200"
+                                    }`}
+                                  >
+                                    {ft.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Max Files Stepper */}
+                            <div>
+                              <label className="mb-1 block text-[11px] font-semibold text-text-tertiary">
+                                Maksimal File
+                              </label>
+                              <NumberStepper
+                                value={
+                                  task.evidence_requirement?.max_files ?? 1
+                                }
+                                onChange={(v) =>
+                                  updateTask(phase.phase_index, task.id, {
+                                    evidence_requirement: {
+                                      ...task.evidence_requirement!,
+                                      max_files: v,
+                                    },
+                                  })
+                                }
+                                min={1}
+                                max={5}
+                                step={1}
+                                className="h-9"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

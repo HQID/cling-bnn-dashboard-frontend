@@ -9,6 +9,7 @@ import api, {
   type QuestHistory,
   type RelapseLog,
   type EmergencyLog,
+  type EvidenceUpload,
 } from "@/lib/api";
 
 // ─── Dashboard ──────────────────────────────────────────────────────────────
@@ -318,6 +319,21 @@ export function useClientEmergencyLogs(
       return data.data;
     },
     enabled: !!clientUid,
+  });
+}
+
+// ─── Evidence ────────────────────────────────────────────────────────────────
+
+export function useQuestEvidence(clientUid: string, questId: string) {
+  return useQuery({
+    queryKey: ["evidence", clientUid, questId],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<EvidenceUpload[]>>(
+        `/bnn/quests/${clientUid}/${questId}/evidence`
+      );
+      return data.data;
+    },
+    enabled: !!clientUid && !!questId,
   });
 }
 
