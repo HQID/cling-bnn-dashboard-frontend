@@ -6,6 +6,7 @@ import {
   useClient,
   useDeactivateClient,
   useResetClientPassword,
+  useClientCompletedQuests,
 } from "@/hooks/use-api";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import {
@@ -18,6 +19,12 @@ import {
   TrendingUp,
   AlertTriangle,
   Flame,
+  CheckCircle,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  File,
+  ExternalLink,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,6 +34,7 @@ export default function ClientDetailPage() {
   const { data: client, isLoading } = useClient(clientUid);
   const deactivateClient = useDeactivateClient(clientUid);
   const resetPassword = useResetClientPassword(clientUid);
+  const { data: completedQuests } = useClientCompletedQuests(clientUid);
 
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
@@ -336,6 +344,93 @@ export default function ClientDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Completed Quests with Evidence */}
+      {completedQuests && completedQuests.total_completed_with_evidence > 0 && (
+        <div className="mt-4">
+          <h3 className="mb-4 text-sm font-semibold text-text-primary">
+            Riwayat Quest dengan Bukti
+          </h3>
+          <div className="space-y-3">
+            {Object.entries(completedQuests.quests_by_date)
+              .sort(([a], [b]) => b.localeCompare(a))
+              .map(([date, quests]) => (
+                <div key={date} className="rounded-[16px] bg-grey50 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5 text-text-tertiary" />
+                    <span className="text-xs font-semibold text-text-secondary">
+                      {formatDate(date)}
+                    </span>
+                    <span className="text-xs text-text-tertiary">
+                      ({quests.length} quest)
+                    </span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {quests.map((quest) => (
+                      <div
+                        key={quest.id}
+                        className="rounded-[12px] bg-off-white p-3.5"
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-success" />
+                            <span className="text-sm font-medium text-text-primary">
+                              {quest.title}
+                            </span>
+                            <span className="rounded-full bg-grey100 px-2 py-0.5 text-[10px] font-semibold text-grey600">
+                              {quest.quest_type}
+                            </span>
+                          </div>
+                          <span className="text-xs text-text-tertiary">
+                            +{quest.xp_reward} XP
+                          </span>
+                        </div>
+                        {quest.description && (
+                          <p className="mb-2 text-xs text-text-secondary">
+                            {quest.description}
+                          </p>
+                        )}
+                        {/* Evidence files */}
+                        {quest.evidence.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {quest.evidence.map((ev) => {
+                              const isImage = ev.mime_type.startsWith("image/");
+                              const isVideo = ev.mime_type.startsWith("video/");
+                              const isPdf = ev.mime_type === "application/pdf";
+                              return (
+                                <a
+                                  key={ev.id}
+                                  href={ev.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 rounded-[10px] border border-grey200 bg-background px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-grey50"
+                                >
+                                  {isImage ? (
+                                    <ImageIcon className="h-3.5 w-3.5 text-blue-500" />
+                                  ) : isVideo ? (
+                                    <Video className="h-3.5 w-3.5 text-purple-500" />
+                                  ) : isPdf ? (
+                                    <FileText className="h-3.5 w-3.5 text-red-500" />
+                                  ) : (
+                                    <File className="h-3.5 w-3.5 text-grey500" />
+                                  )}
+                                  <span className="max-w-[120px] truncate">
+                                    {ev.file_name}
+                                  </span>
+                                  <ExternalLink className="h-3 w-3 text-text-tertiary" />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Reset Password Modal */}
       {showResetPassword && (

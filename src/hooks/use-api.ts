@@ -10,6 +10,7 @@ import api, {
   type RelapseLog,
   type EmergencyLog,
   type EvidenceUpload,
+  type CompletedQuestsResponse,
 } from "@/lib/api";
 
 // ─── Dashboard ──────────────────────────────────────────────────────────────
@@ -334,6 +335,24 @@ export function useQuestEvidence(clientUid: string, questId: string) {
       return data.data;
     },
     enabled: !!clientUid && !!questId,
+  });
+}
+
+export function useClientCompletedQuests(
+  clientUid: string,
+  startDate?: string,
+  endDate?: string
+) {
+  return useQuery({
+    queryKey: ["analytics", clientUid, "completed-quests", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<CompletedQuestsResponse>>(
+        `/bnn/analytics/clients/${clientUid}/completed-quests`,
+        { params: { start_date: startDate, end_date: endDate } }
+      );
+      return data.data;
+    },
+    enabled: !!clientUid,
   });
 }
 

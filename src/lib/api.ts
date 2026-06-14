@@ -218,6 +218,27 @@ export interface RelapseLog {
   created_at: string;
 }
 
+export interface CompletedQuestWithEvidence {
+  id: string;
+  title: string;
+  description: string;
+  quest_type: string;
+  xp_reward: number;
+  sparkle_reward: number;
+  completed_at: string | null;
+  date: string;
+  evidence_requirement: EvidenceRequirement | null;
+  evidence: EvidenceUpload[];
+}
+
+export interface CompletedQuestsResponse {
+  uid: string;
+  date_range: { start: string; end: string };
+  total_completed_with_evidence: number;
+  quests_by_date: Record<string, CompletedQuestWithEvidence[]>;
+  quests: CompletedQuestWithEvidence[];
+}
+
 export interface EmergencyLog {
   id: string;
   event_type: string;
